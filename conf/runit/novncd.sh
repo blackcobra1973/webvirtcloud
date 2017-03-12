@@ -1,4 +1,4 @@
 #!/bin/sh
-# `/sbin/setuser nginx` runs the given command as the user `nginx`.
+# `/sbin/setuser www-data` runs the given command as the user `www-data`.
 cd /opt/webvirtcloud
-exec /sbin/setuser nginx /opt/webvirtcloud/venv/bin/python /opt/webvirtcloud/console/novncd >> /var/log/novncd.log 2>&1
+exec /sbin/setuser www-data /opt/webvirtcloud/venv/bin/python /opt/webvirtcloud/console/novncd >> /var/log/novncd.log 2>&1
