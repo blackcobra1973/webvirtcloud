@@ -67,12 +67,15 @@ sudo git clone https://github.com/retspen/webvirtcloud && cd webvirtcloud
 
 #### Start installation webvirtcloud
 ```
-sudo virtualenv venv
-sudo source venv/bin/activate
-sudo venv/bin/pip install -r conf/requirements.txt
-sudo cp conf/nginx/webvirtcloud.conf /etc/nginx/conf.d/
-sudo venv/bin/python manage.py migrate
+virtualenv venv
+source venv/bin/activate
+venv/bin/pip install --upgrade pip
+venv/bin/pip install -r conf/requirements.txt
+cp conf/nginx/webvirtcloud.conf /etc/nginx/conf.d/
+venv/bin/python manage.py migrate
 ```
+
+**Note**: Pip on CentOS 7 is to old so needs to be upgraded in virtualenv
 
 #### Configure the supervisor for CentOS
 Put the needed config files in /etc/supervisord.d/
