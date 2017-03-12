@@ -8,20 +8,20 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -qyy install \
 	-o APT::Install-Suggests=false \
 	git python-virtualenv python-dev libxml2-dev libvirt-dev zlib1g-dev nginx libsasl2-modules
 
-ADD . /srv/webvirtcloud
-RUN chown -R www-data:www-data /srv/webvirtcloud
+ADD . /opt/webvirtcloud
+RUN chown -R www-data:www-data /opt/webvirtcloud
 
 # Setup webvirtcloud
-RUN cd /srv/webvirtcloud && \
+RUN cd /opt/webvirtcloud && \
 	virtualenv venv && \
 	. venv/bin/activate && \
 	pip install -U pip && \
 	pip install -r conf/requirements.txt && \
-	chown -R www-data:www-data /srv/webvirtcloud
+	chown -R www-data:www-data /opt/webvirtcloud
 
-RUN cd /srv/webvirtcloud && . venv/bin/activate && \
+RUN cd /opt/webvirtcloud && . venv/bin/activate && \
 	python manage.py migrate && \
-	chown -R www-data:www-data /srv/webvirtcloud
+	chown -R www-data:www-data /opt/webvirtcloud
 
 # Setup Nginx
 RUN echo "\ndaemon off;" >> /etc/nginx/nginx.conf && \

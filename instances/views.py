@@ -200,7 +200,7 @@ def instance(request, compute_id, vname):
                 {'dev': disk['dev'], 'storage': disk['storage'],
                  'image': image, 'format': disk['format']})
         return clone_disk
-    
+
     def filesizefstr(size_str):
         if size_str == '':
             return 0
@@ -245,7 +245,7 @@ def instance(request, compute_id, vname):
                 memory += int(conn.get_memory())
                 for disk in conn.get_disk_device():
                     disk_size += int(disk['size'])>>30
-        
+
         ua = request.user.userattributes
         msg = ""
         if ua.max_instances > 0 and instance > ua.max_instances:
@@ -427,11 +427,11 @@ def instance(request, compute_id, vname):
                     input_disk_size = filesizefstr(request.POST.get('disk_size_' + disk['dev'], ''))
                     if input_disk_size > disk['size']+(64<<20):
                         disk['size_new'] = input_disk_size
-                        disks_new.append(disk) 
+                        disks_new.append(disk)
                 disk_sum = sum([disk['size']>>30 for disk in disks_new])
                 disk_new_sum = sum([disk['size_new']>>30 for disk in disks_new])
                 quota_msg = check_user_quota(0, int(new_vcpu)-vcpu, int(new_memory)-memory, disk_new_sum-disk_sum)
-                if not request.user.is_superuser and quota_msg:    
+                if not request.user.is_superuser and quota_msg:
                     msg = _("User %s quota reached, cannot resize '%s'!" % (quota_msg, instance.name))
                     error_messages.append(msg)
                 else:
@@ -598,13 +598,13 @@ def instance(request, compute_id, vname):
                 if 'change_options' in request.POST:
                     instance.is_template = request.POST.get('is_template', False)
                     instance.save()
-                    
+
                     options = {}
                     for post in request.POST:
                         if post in ['title', 'description']:
                             options[post] = request.POST.get(post, '')
                     conn.set_options(options)
-                    
+
                     msg = _("Edit options")
                     addlogmsg(request.user.username, instance.name, msg)
                     return HttpResponseRedirect(request.get_full_path() + '#options')
@@ -617,8 +617,8 @@ def instance(request, compute_id, vname):
                     disk_sum = sum([disk['size']>>30 for disk in disks])
                     quota_msg = check_user_quota(1, vcpu, memory, disk_sum)
                     check_instance = Instance.objects.filter(name=clone_data['name'])
-                    
-                    if not request.user.is_superuser and quota_msg:    
+
+                    if not request.user.is_superuser and quota_msg:
                         msg = _("User %s quota reached, cannot create '%s'!" % (quota_msg, clone_data['name']))
                         error_messages.append(msg)
                     elif check_instance:
@@ -784,7 +784,7 @@ def inst_graph(request, compute_id, vname):
 
 @login_required
 def guess_mac_address(request, vname):
-    dhcp_file = '/srv/webvirtcloud/dhcpd.conf'
+    dhcp_file = '/opt/webvirtcloud/dhcpd.conf'
     data = { 'vname': vname, 'mac': '52:54:00:' }
     if os.path.isfile(dhcp_file):
         with open(dhcp_file, 'r') as f:
@@ -799,7 +799,7 @@ def guess_mac_address(request, vname):
 
 @login_required
 def guess_clone_name(request):
-    dhcp_file = '/srv/webvirtcloud/dhcpd.conf'
+    dhcp_file = '/opt/webvirtcloud/dhcpd.conf'
     prefix = settings.CLONE_INSTANCE_DEFAULT_PREFIX
     if os.path.isfile(dhcp_file):
         instance_names = [i.name for i in Instance.objects.filter(name__startswith=prefix)]

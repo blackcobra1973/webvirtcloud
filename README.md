@@ -28,14 +28,14 @@ cd webvirtcloud
 sudo cp conf/supervisor/webvirtcloud.conf /etc/supervisor/conf.d
 sudo cp conf/nginx/webvirtcloud.conf /etc/nginx/conf.d
 cd ..
-sudo mv webvirtcloud /srv
-sudo chown -R www-data:www-data /srv/webvirtcloud
-cd /srv/webvirtcloud
+sudo mv webvirtcloud /opt
+sudo chown -R www-data:www-data /opt/webvirtcloud
+cd /opt/webvirtcloud
 virtualenv venv
 source venv/bin/activate
 pip install -r conf/requirements.txt
 python manage.py migrate
-sudo chown -R www-data:www-data /srv/webvirtcloud
+sudo chown -R www-data:www-data /opt/webvirtcloud
 sudo rm /etc/nginx/sites-enabled/default
 ```
 
@@ -61,7 +61,7 @@ sudo yum -y install python-virtualenv python-devel libvirt-devel glibc gcc nginx
 #### Creating directories and cloning repo
 
 ```bash
-sudo mkdir /srv && cd /srv
+sudo cd /opt
 sudo git clone https://github.com/retspen/webvirtcloud && cd webvirtcloud
 ```
 
@@ -75,21 +75,29 @@ sudo venv/bin/python manage.py migrate
 ```
 
 #### Configure the supervisor for CentOS
+Put the needed config files in /etc/supervisord.d/
+```bash
+cd webvirtcloud
+sudo cp conf/supervisor/webvirtcloud.ini /etc/supervisor/conf.d
+```
+
+**Or:**
+
 Add the following after the [include] line (after **files = ... ** actually):
 ```bash
 sudo vim /etc/supervisord.conf
 
 [program:webvirtcloud]
-command=/srv/webvirtcloud/venv/bin/gunicorn webvirtcloud.wsgi:application -c /srv/webvirtcloud/gunicorn.conf.py
-directory=/srv/webvirtcloud
+command=/opt/webvirtcloud/venv/bin/gunicorn webvirtcloud.wsgi:application -c /opt/webvirtcloud/gunicorn.conf.py
+directory=/opt/webvirtcloud
 user=nginx
 autostart=true
 autorestart=true
 redirect_stderr=true
 
 [program:novncd]
-command=/srv/webvirtcloud/venv/bin/python /srv/webvirtcloud/console/novncd
-directory=/srv/webvirtcloud
+command=/opt/webvirtcloud/venv/bin/python /opt/webvirtcloud/console/novncd
+directory=/opt/webvirtcloud
 user=nginx
 autostart=true
 autorestart=true
@@ -126,17 +134,17 @@ You will need to edit the main nginx.conf file as the one that comes from the rp
 Also make sure file in **/etc/nginx/conf.d/webvirtcloud.conf** has the proper paths:
 ```
 upstream gunicorn_server {
-    #server unix:/srv/webvirtcloud/venv/wvcloud.socket fail_timeout=0;
+    #server unix:/opt/webvirtcloud/venv/wvcloud.socket fail_timeout=0;
     server 127.0.0.1:8000 fail_timeout=0;
 }
 server {
     listen 80;
 
     server_name servername.domain.com;
-    access_log /var/log/nginx/webvirtcloud-access_log; 
+    access_log /var/log/nginx/webvirtcloud-access_log;
 
     location /static/ {
-        root /srv/webvirtcloud;
+        root /opt/webvirtcloud;
         expires max;
     }
 
@@ -157,13 +165,13 @@ server {
 Change permissions so nginx can read the webvirtcloud folder:
 
 ```bash
-sudo chown -R nginx:nginx /srv/webvirtcloud
+sudo chown -R nginx:nginx /opt/webvirtcloud
 ```
 
 Change permission for selinux:
 
 ```bash
-sudo semanage fcontext -a -t httpd_sys_content_t "/srv/webvirtcloud(/.*)"
+sudo semanage fcontext -a -t httpd_sys_content_t "/opt/webvirtcloud(/.*)"
 ```
 
 Add required user to the kvm group:
@@ -188,7 +196,7 @@ webvirtcloud                     RUNNING    pid 24185, uptime 2:59:14
 #### Apache mod_wsgi configuration
 ```
 WSGIDaemonProcess webvirtcloud threads=2 maximum-requests=1000 display-name=webvirtcloud
-WSGIScriptAlias / /srv/webvirtcloud/webvirtcloud/wsgi.py
+WSGIScriptAlias / /opt/webvirtcloud/webvirtcloud/wsgi.py
 ```
 
 #### Install final required packages for libvirtd and others on Host Server
